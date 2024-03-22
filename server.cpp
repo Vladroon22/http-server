@@ -19,7 +19,7 @@ TCPServer::~TCPServer() {
     close(serverSocket);
     close(epollFD);
     std::cout << "The connection disabled!\n";
-  }
+  } 
 }
 
 void TCPServer::NoBlock(int fd) {
@@ -92,7 +92,7 @@ std::vector<char> TCPServer::Received(int client_fd) {
 }
 
 void TCPServer::Start() {
-  while (true) {
+  while (serverSocket > 0) {
     epoll_event events[MAX_EVENTS];
     int numEvents = epoll_wait(epollFD, events, MAX_EVENTS, -1);
     for (int i = 0; i < numEvents; ++i) {
@@ -108,7 +108,17 @@ void TCPServer::Start() {
 void TCPServer::Response(int clientSocket) {
   std::vector<char> buffer = Received(clientSocket);
 
-  if (!buffer.empty()) {
+  if (buffer.empty()) {
+    std::stringstream errorResponse;
+    errorResponse << buffer.data() << "\r\n";
+    errorResponse << "Content-Type: text/html; charser=utf-8\r\n";
+    errorResponse << "Content-Length: 0\r\n";
+    errorResponse << "Connection: close\r\n";
+    errorResponse << "\r\n\r\n";
+    
+    Send(clientSocket, errorResponse.str());
+
+  } else {
     std::cout << "Received: " << buffer.data() << std::endl;
 
     std::time_t currentTime = std::time(nullptr);
@@ -144,16 +154,8 @@ void TCPServer::Response(int clientSocket) {
     response << htmlContent.str();
 
     Send(clientSocket, response.str());
-  } else {
-    std::stringstream errorResponse;
-    errorResponse << buffer.data() << "\r\n";
-    errorResponse << "Content-Type: text/html; charser=utf-8\r\n";
-    errorResponse << "Content-Length: 0\r\n";
-    errorResponse << "Connection: close\r\n";
-    errorResponse << "\r\n\r\n";
-    
-    Send(clientSocket, errorResponse.str());
   }
+  
   close(clientSocket);
 }
 
