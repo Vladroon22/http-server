@@ -176,8 +176,8 @@ void TCPServer::AcceptConnection(int client_fd) {
     exit(EXIT_FAILURE);
   }
 
-  AddToEpoll(client_fd);
   NoBlock(client_fd);
+  AddToEpoll(client_fd);
 
   std::cout << "New client was accepted: " << inet_ntoa(client.sin_addr) << ":" << ntohs(client.sin_port) << "\n";
 }
