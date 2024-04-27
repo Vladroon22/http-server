@@ -110,7 +110,7 @@ void TCPServer::Response(int clientSocket) {
 
   if (buffer.empty()) {
     std::stringstream errorResponse;
-    errorResponse << buffer.data() << "\r\n";
+    errorResponse << "HTTP/1.1 404 Not Found\r\n";
     errorResponse << "Content-Type: text/html; charser=utf-8\r\n";
     errorResponse << "Content-Length: 0\r\n";
     errorResponse << "Connection: close\r\n";
@@ -158,6 +158,7 @@ void TCPServer::Response(int clientSocket) {
   
   close(clientSocket);
 }
+
 
 void TCPServer::AddToEpoll(int fd) {
   epoll_event event{};

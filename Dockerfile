@@ -2,8 +2,7 @@ FROM ubuntu:20.04
 
 WORKDIR /SERVER
 
-RUN apt-get update && apt-get install -y make 
-RUN apt install -y g++ 
+RUN apt-get update && apt-get install -y make g++ curl
 
 COPY . /SERVER/
 
