@@ -15,7 +15,7 @@ class Router {
         void POST(int client_fd);
         void PUT(int client_fd);
         void DELETE(int client_fd);
-        void HandleFunc(int fd, const std::string &method, const std::string &path, std::function<void(int)> routes);
+        void HandleFunc(int fd, const std::string &method, const std::string &path, std::function<void(int)> rout);
         void HandleRequest(int id, const std::string &method, const std::string &path);
     private:
         void Send(int clientSocket, const std::string &data);
