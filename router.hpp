@@ -19,11 +19,11 @@ class Router {
         void HandleRequest(int id, const std::string &method, const std::string &path);
     private:
         void Send(int clientSocket, const std::string &data);
+        std::string genPath(const std::string &method, const std::string &path);
+    private:
         std::string method;
         std::string path;
-        std::string genPath(const std::string &method, const std::string &path);
         std::unordered_map<std::string, std::function<void(int)>> routes;
-
 };
 
 } // http
