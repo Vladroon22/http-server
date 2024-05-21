@@ -10,17 +10,19 @@
 #include <arpa/inet.h>
 #include <vector>
 
+namespace http{
 
 class TCPServer {
     public:
         TCPServer(int port);
         ~TCPServer();
-
-        void NoBlock(int fd);
         bool Init();
+        void Start();
+        
+    private:
+        void NoBlock(int fd);
         void Send(int clientSocket, const std::string& data);
         std::vector <char> Received(int client_fd);
-        void Start();
         void Response(int clientSocket);
         void AddToEpoll(int fd);
         void AcceptConnection(int client_fd);
@@ -31,5 +33,5 @@ class TCPServer {
         int epollFD;
 };
 
-
+}; 
 #endif

@@ -7,10 +7,13 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <vector>
 #include "server.hpp"
 
 
 constexpr int MAX_EVENTS = 32;
+
+using namespace http;
 
 TCPServer::TCPServer(int port) : port(port), serverSocket(-1), epollFD(-1) {}
 
@@ -86,6 +89,7 @@ std::vector<char> TCPServer::Received(int client_fd) {
   if (rcv < 0) {
     std::cout << "Client disconnected\n";
     close(client_fd);
+    return buffer;
   }
 
   return buffer;
