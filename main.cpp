@@ -20,11 +20,11 @@ int main() {
     });
 
     router.HandlerFunc("PUT", "/data/put", [&router](int client_fd){
-        router.POST(client_fd);
+        router.PUT(client_fd);
     });
 
     router.HandlerFunc("DELETE", "/data/delete", [&router](int client_fd){
-        router.POST(client_fd);
+        router.DELETE(client_fd);
     });
 
 
