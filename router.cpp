@@ -20,22 +20,22 @@ void Router::Send(int clientSocket, const std::string &data) {
 }
 
 void Router::GET(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nGET request handled \n";
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nGET request handled \n";
     Send(client_fd, response);
 }
 
 void Router::POST(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nPOST request handled \n";
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nPOST request handled \n";
     Send(client_fd, response);
 }
 
 void Router::DELETE(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nDELETE request handled \n";
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nDELETE request handled \n";
     Send(client_fd, response);
 }
 
 void Router::PUT(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nPUT request handled \n";
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nPUT request handled \n";
     Send(client_fd, response);
 }
 
