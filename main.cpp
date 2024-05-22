@@ -12,11 +12,11 @@ int main() {
     http::Router router;
     
     router.HandlerFunc("GET", "/data", [&router](int client_fd){
-        router.GET(client_fd);
+        router.Send(client_fd, "hello");
     });
 
     router.HandlerFunc("POST", "/data/post", [&router](int client_fd){
-        router.POST(client_fd);
+        router.Send(client_fd, "");
     });
 
     router.HandlerFunc("PUT", "/data/put", [&router](int client_fd){

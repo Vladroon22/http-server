@@ -17,8 +17,8 @@ class Router {
         void DELETE(int client_fd);
         void HandlerFunc(const std::string &method, const std::string &path, std::function<void(int)> handler);
         void HandleRequest(int id, const std::string &method, const std::string &path);
-    private:
         void Send(int clientSocket, const std::string &data);
+    private:
         std::string genPath(const std::string &method, const std::string &path);
     private:
         std::string method;
