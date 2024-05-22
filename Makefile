@@ -2,7 +2,7 @@ CXX = g++
 CFLAGS = -Wall -Wextra 
 TARGET = my_server
 
-SRCS = main.cpp server.cpp
+SRCS = main.cpp server.cpp router.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(TARGET)

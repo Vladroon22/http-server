@@ -111,58 +111,32 @@ void TCPServer::Start() {
 
 void TCPServer::Response(int clientSocket) {
   std::vector<char> buffer = Received(clientSocket);
-
   if (buffer.empty()) {
     std::stringstream errorResponse;
-    errorResponse << "HTTP/1.1 404 Not Found\r\n";
-    errorResponse << "Content-Type: text/html; charser=utf-8\r\n";
-    errorResponse << "Content-Length: 0\r\n";
-    errorResponse << "Connection: close\r\n";
-    errorResponse << "\r\n\r\n";
-    
+    errorResponse << "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: close\r\nerrorResponse << \r\n\r\n";
     Send(clientSocket, errorResponse.str());
-
-  } else {
-    std::cout << "Received: " << buffer.data() << std::endl;
-
-    std::time_t currentTime = std::time(nullptr);
-    std::tm *localTime = std::localtime(&currentTime);
-    char currDate[64];
-    std::strftime(currDate, sizeof(currDate), "%a, %d %b %Y %H:%M:%S GMT",localTime);
-
-    std::stringstream htmlContent;
-    htmlContent << "<!DOCTYPE html>\n";
-    htmlContent << "<html>\n";
-    htmlContent << "<head>\n";
-    htmlContent << "<meta charset='UTF-8'>\n";
-    htmlContent << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
-    htmlContent << "<title>My-Web-Server-in-C++</title>\n";
-    htmlContent << "</head>\n";
-    htmlContent << "<body>\n";
-    htmlContent << "<h1>Welcome to My Website</h1>\n";
-    htmlContent << "<h2>My Web-Server in C++</h2>\n";
-    htmlContent << "<p>This is the main content of my web-page.</p>\n";
-    htmlContent << "</body>\n";
-    htmlContent << "</html>\n";
-
-    std::stringstream response;
-    response << "HTTP/1.1 200 OK\r\n";
-    response << "Version: HTTP/1.1 \r\n";
-    response << "Server: MyServerC++\r\n";
-    response << "Content-Type: text/html; charset=utf-8\r\n";
-    response << "Access-Control-Allow-Origin: *\r\n";
-    response << "Content-Length: " << htmlContent.str().length() << "\r\n";
-    response << "Date: " << currDate << "\r\n";
-    response << "Connection: keep-alive\r\n";
-    response << "\r\n\r\n";
-    response << htmlContent.str();
-
-    Send(clientSocket, response.str());
+    close(clientSocket);
   }
+  std::string method, path, sum = "";
+  for (auto it = buffer.begin(); it != buffer.end(); ++it) {
+    if (sum == "GET" || sum == "POST" || sum == "PUT" || sum == "DELETE") {
+      method = sum;
+      sum = "";
+    }
+    sum += *it;
+    if (sum == "/") {
+      do {
+        sum += *it;
+      }while (*it != ' ');
+      path = sum; 
+    }
+  }
+  router.HandleRequest(clientSocket, method, path);
+  
+  std::cout << "Received: " << buffer.data() << std::endl;
   
   close(clientSocket);
 }
-
 
 void TCPServer::AddToEpoll(int fd) {
   epoll_event event{};
@@ -178,7 +152,8 @@ void TCPServer::AcceptConnection(int client_fd) {
   client_fd = accept(serverSocket, (struct sockaddr *)&client, &clientLen);
   if (client_fd < 0) {
     std::cerr << "ERROR: not accepted connection\n";
-    exit(EXIT_FAILURE);
+    close(client_fd);
+    return;
   }
 
   NoBlock(client_fd);
