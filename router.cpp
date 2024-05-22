@@ -20,23 +20,106 @@ void Router::Send(int clientSocket, const std::string &data) {
 }
 
 void Router::GET(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nGET request handled \n";
-    Send(client_fd, response);
+    std::stringstream htmlContent;
+    htmlContent << "<!DOCTYPE html>\n";
+    htmlContent << "<html>\n";
+    htmlContent << "<head>\n";
+    htmlContent << "<meta charset='UTF-8'>\n";
+    htmlContent << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
+    htmlContent << "<title>My-Web-Server-in-C++</title>\n";
+    htmlContent << "</head>\n";
+    htmlContent << "<body>\n";
+    htmlContent << "<h1>Welcome to My Website</h1>\n";
+    htmlContent << "<h2>My Web-Server in C++</h2>\n";
+    htmlContent << "<p>This is the main content of my web-page.</p>\n";
+    htmlContent << "</body>\n";
+    htmlContent << "</html>\n";
+
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n";
+    response << "Content-Type: text/html; charser=utf-8\r\n";
+    response << "Content-Length: " << htmlContent.str().length() << "\r\n";
+    response << "Connection: keep-alive\r\n\r\n";
+    response << htmlContent.str();
+    Send(client_fd, response.str());
 }
 
 void Router::POST(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nPOST request handled \n";
-    Send(client_fd, response);
+
+    std::stringstream htmlContent;
+    htmlContent << "<!DOCTYPE html>\n";
+    htmlContent << "<html>\n";
+    htmlContent << "<head>\n";
+    htmlContent << "<meta charset='UTF-8'>\n";
+    htmlContent << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
+    htmlContent << "<title>My-Web-Server-in-C++</title>\n";
+    htmlContent << "</head>\n";
+    htmlContent << "<body>\n";
+    htmlContent << "<h1>Welcome to My Website</h1>\n";
+    htmlContent << "<h2>My Web-Server in C++</h2>\n";
+    htmlContent << "<p>This is the main content of my web-page.</p>\n";
+    htmlContent << "</body>\n";
+    htmlContent << "</html>\n";
+
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n";
+    response << "Content-Type: text/html; charser=utf-8\r\n";
+    response << "Content-Length: " << htmlContent.str().length() << "\r\n";
+    response << "Connection: keep-alive\r\n\r\n";
+    response << htmlContent.str();
+    Send(client_fd, response.str());
 }
 
 void Router::DELETE(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nDELETE request handled \n";
-    Send(client_fd, response);
+
+    std::stringstream htmlContent;
+    htmlContent << "<!DOCTYPE html>\n";
+    htmlContent << "<html>\n";
+    htmlContent << "<head>\n";
+    htmlContent << "<meta charset='UTF-8'>\n";
+    htmlContent << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
+    htmlContent << "<title>My-Web-Server-in-C++</title>\n";
+    htmlContent << "</head>\n";
+    htmlContent << "<body>\n";
+    htmlContent << "<h1>Welcome to My Website</h1>\n";
+    htmlContent << "<h2>My Web-Server in C++</h2>\n";
+    htmlContent << "<p>This is the main content of my web-page.</p>\n";
+    htmlContent << "</body>\n";
+    htmlContent << "</html>\n";
+
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n";
+    response << "Content-Type: text/html; charser=utf-8\r\n";
+    response << "Content-Length: " << htmlContent.str().length() << "\r\n";
+    response << "Connection: keep-alive\r\n\r\n";
+    response << htmlContent.str();
+    Send(client_fd, response.str());
 }
 
 void Router::PUT(int client_fd) {
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: keep-alive\r\n\r\nPUT request handled \n";
-    Send(client_fd, response);
+
+    std::stringstream htmlContent;
+    htmlContent << "<!DOCTYPE html>\n";
+    htmlContent << "<html>\n";
+    htmlContent << "<head>\n";
+    htmlContent << "<meta charset='UTF-8'>\n";
+    htmlContent << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
+    htmlContent << "<title>My-Web-Server-in-C++</title>\n";
+    htmlContent << "</head>\n";
+    htmlContent << "<body>\n";
+    htmlContent << "<h1>Welcome to My Website</h1>\n";
+    htmlContent << "<h2>My Web-Server in C++</h2>\n";
+    htmlContent << "<p>This is the main content of my web-page.</p>\n";
+    htmlContent << "</body>\n";
+    htmlContent << "</html>\n";
+
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n";
+    response << "Content-Type: text/html; charser=utf-8\r\n";
+    response << "Content-Length: " << htmlContent.str().length() << "\r\n";
+    response << "Connection: keep-alive\r\n\r\n";
+    response << htmlContent.str();
+    Send(client_fd, response.str());
 }
 
 std::string Router::genPath(const std::string &method, const std::string &path) {
@@ -61,25 +144,3 @@ void Router::HandleRequest(int fd, const std::string &method, const std::string 
     }
 }
 
-/*
-std::time_t currentTime = std::time(nullptr);
-    std::tm *localTime = std::localtime(&currentTime);
-    char currDate[64];
-    std::strftime(currDate, sizeof(currDate), "%a, %d %b %Y %H:%M:%S GMT",localTime);
-
-    std::stringstream htmlContent;
-    htmlContent << "<!DOCTYPE html>\n";
-    htmlContent << "<html>\n";
-    htmlContent << "<head>\n";
-    htmlContent << "<meta charset='UTF-8'>\n";
-    htmlContent << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
-    htmlContent << "<title>My-Web-Server-in-C++</title>\n";
-    htmlContent << "</head>\n";
-    htmlContent << "<body>\n";
-    htmlContent << "<h1>Welcome to My Website</h1>\n";
-    htmlContent << "<h2>My Web-Server in C++</h2>\n";
-    htmlContent << "<p>This is the main content of my web-page.</p>\n";
-    htmlContent << "</body>\n";
-    htmlContent << "</html>\n";
-
-  Send(clientSocket, htmlContent.str());*/

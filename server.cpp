@@ -25,6 +25,10 @@ TCPServer::~TCPServer() {
   } 
 }
 
+Router& TCPServer::GetRouter() {
+  return router;
+}
+
 void TCPServer::NoBlock(int fd) {
   int flags = fcntl(fd, F_GETFL, 0);
   fcntl(fd, F_SETFL, flags | O_NONBLOCK);
@@ -116,21 +120,13 @@ void TCPServer::Response(int clientSocket) {
     errorResponse << "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: close\r\nerrorResponse << \r\n\r\n";
     Send(clientSocket, errorResponse.str());
     close(clientSocket);
+    return;
   }
-  std::string method, path, sum = "";
-  for (auto it = buffer.begin(); it != buffer.end(); ++it) {
-    if (sum == "GET" || sum == "POST" || sum == "PUT" || sum == "DELETE") {
-      method = sum;
-      sum = "";
-    }
-    sum += *it;
-    if (sum == "/") {
-      do {
-        sum += *it;
-      }while (*it != ' ');
-      path = sum; 
-    }
-  }
+  std::string request(buffer.begin(), buffer.end());
+  std::istringstream requestStream(request);
+  std::string method, path, httpVer;
+  requestStream >> method >> path >> httpVer;
+
   router.HandleRequest(clientSocket, method, path);
   
   std::cout << "Received: " << buffer.data() << std::endl;

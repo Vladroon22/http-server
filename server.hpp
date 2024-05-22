@@ -19,7 +19,8 @@ class TCPServer {
         ~TCPServer();
         bool Init();
         void Start();
-    
+        Router& GetRouter();
+
     private:
         void AcceptConnection(int client_fd);
         void NoBlock(int fd);
