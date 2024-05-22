@@ -16,6 +16,10 @@ int main() {
         router.GET(client_fd);
     });
 
+    router.HandlerFunc("GET", "/data/get", [&router](int client_fd){
+        router.GET(client_fd);
+    });
+
     router.HandlerFunc("POST", "/data/post", [&router](int client_fd){
         router.POST(client_fd);
     });

@@ -93,7 +93,9 @@ std::vector<char> TCPServer::Received(int client_fd) {
   if (rcv < 0) {
     std::cout << "Client disconnected\n";
     close(client_fd);
-    return buffer;
+    buffer.clear();
+  } else {
+    buffer.resize(rcv);
   }
 
   return buffer;
