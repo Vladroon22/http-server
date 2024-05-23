@@ -64,7 +64,7 @@ void Router::POST(int client_fd) {
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n";
     response << "Host: 127.0.0.1:8000\r\n";
-    response << "Content-Type: text/html; charser=utf-8\r\n";
+    response << "Content-Type: application/x-www-form-urlencoded\r\n";
     response << "Content-Length: "<< htmlContent.str().length() << "\r\n";
     response << "Connection: keep-alive\r\n\r\n";
     response << htmlContent.str();

@@ -1,10 +1,12 @@
 #ifndef ROUTER_HPP
 #define ROUTER_HPP
 
+#include <nlohmann/json.hpp>
 #include <functional>
 #include <string>
 #include <unordered_map>
 
+using json = nlohmann::json;
 namespace http {
 
 class Router { 
@@ -21,6 +23,7 @@ class Router {
     private:
         std::string genPath(const std::string &method, const std::string &path);
     private:
+        json j;
         std::string method;
         std::string path;
         std::unordered_map<std::string, std::function<void(int)>> routes;
