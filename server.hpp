@@ -15,11 +15,10 @@ namespace http{
 
 class TCPServer {
     public:
-        TCPServer(int port);
+        TCPServer(int port, Router& router);
         ~TCPServer();
         bool Init();
         void Start();
-        Router& GetRouter();
 
     private:
         void AcceptConnection(int client_fd);
@@ -28,12 +27,13 @@ class TCPServer {
         std::vector <char> Received(int client_fd);
         void Response(int clientSocket);
         void AddToEpoll(int fd);
+        std::string ErrorResp();
 
     private:
         int port;
         int serverSocket;
         int epollFD;
-        Router router;
+        Router &router;
 };
 
 }; 

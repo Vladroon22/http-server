@@ -20,6 +20,7 @@ class Router {
         void HandlerFunc(const std::string &method, const std::string &path, std::function<void(int)> handler);
         void HandleRequest(int id, const std::string &method, const std::string &path);
         void Send(int clientSocket, const std::string &data);
+        std::string ErrorResp();
     private:
         std::string genPath(const std::string &method, const std::string &path);
     private:

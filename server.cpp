@@ -9,13 +9,14 @@
 #include <unistd.h>
 #include <vector>
 #include "server.hpp"
+#include "router.hpp"
 
 
 constexpr int MAX_EVENTS = 32;
 
 using namespace http;
 
-TCPServer::TCPServer(int port) : port(port), serverSocket(-1), epollFD(-1) {}
+TCPServer::TCPServer(int port, Router& router) : port(port), serverSocket(-1), epollFD(-1), router(router) {}
 
 TCPServer::~TCPServer() {
   if (serverSocket != -1 || epollFD != -1) {
@@ -23,10 +24,6 @@ TCPServer::~TCPServer() {
     close(epollFD);
     std::cout << "The connection disabled!\n";
   } 
-}
-
-Router& TCPServer::GetRouter() {
-  return router;
 }
 
 void TCPServer::NoBlock(int fd) {
@@ -115,24 +112,30 @@ void TCPServer::Start() {
   }
 }
 
+std::string TCPServer::ErrorResp(){
+  std::stringstream errorResponse, html;
+  html << "<!DOCTYPE html>\n <html>\n <head> <meta charset='UTF-8'>\n <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n <title>PAGE NOT FOUND</title>\n </head>\n <body> PAGE NOT FOUND </body>\n </html>\n";
+  errorResponse << "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: " << html.str().length() << "\r\nConnection: close\r\nerrorResponse << \r\n\r\n";
+  errorResponse << html.str();
+  return errorResponse.str();
+}  
+
+
 void TCPServer::Response(int clientSocket) {
   std::vector<char> buffer = Received(clientSocket);
   if (buffer.empty()) {
-    std::stringstream errorResponse;
-    errorResponse << "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: 0\r\nConnection: close\r\nerrorResponse << \r\n\r\n";
-    Send(clientSocket, errorResponse.str());
+    std::string err = ErrorResp();
+    Send(clientSocket, err);
     close(clientSocket);
     return;
   }
   std::string request(buffer.begin(), buffer.end());
   std::istringstream requestStream(request);
-  std::string method, path, httpVer;
-  requestStream >> method >> path >> httpVer;
+  std::string method, path;
+  requestStream >> method >> path;
 
   router.HandleRequest(clientSocket, method, path);
-  
-  std::cout << "Received: " << buffer.data() << std::endl;
-  
+  std::cout << "Received: " << buffer.data() << std::endl;  
   close(clientSocket);
 }
 
