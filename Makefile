@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS = -Wall -Wextra 
+CFLAGS = -Wall -Wextra -fsanitize=address -g3
 TARGET = my_server
 
 SRCS = main.cpp server.cpp router.cpp
