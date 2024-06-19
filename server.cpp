@@ -78,6 +78,7 @@ bool TCPServer::Init() {
 
 void TCPServer::Send(int clientSocket, const std::string &data) {
   if (send(clientSocket, data.c_str(), data.length(), O_NONBLOCK) < 0) {
+    router.ErrorResp(HTTPErrors::InternalServerError);
     std::cerr << "ERROR: sending data to client\n\n";
     close(clientSocket);
   }
@@ -88,12 +89,12 @@ std::vector<char> TCPServer::Received(int client_fd) {
   int rcv = recv(client_fd, buffer.data(), buffer.size(), O_NONBLOCK);
 
   if (rcv < 0) {
+    router.ErrorResp(HTTPErrors::InternalServerError);
     std::cout << "Client disconnected\n";
     close(client_fd);
     buffer.clear();
-  } else {
-    buffer.resize(rcv);
-  }
+    return buffer;
+  } 
 
   return buffer;
 }
@@ -112,20 +113,13 @@ void TCPServer::Start() {
   }
 }
 
-std::string TCPServer::ErrorResp(){
-  std::stringstream errorResponse, html;
-  html << "<!DOCTYPE html>\n <html>\n <head> <meta charset='UTF-8'>\n <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n <title>PAGE NOT FOUND</title>\n </head>\n <body> PAGE NOT FOUND </body>\n </html>\n";
-  errorResponse << "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: " << html.str().length() << "\r\nConnection: close\r\nerrorResponse << \r\n\r\n";
-  errorResponse << html.str();
-  return errorResponse.str();
-}  
+
 
 
 void TCPServer::Response(int clientSocket) {
   std::vector<char> buffer = Received(clientSocket);
   if (buffer.empty()) {
-    std::string err = ErrorResp();
-    Send(clientSocket, err);
+    Send(clientSocket, router.ErrorResp(HTTPErrors::InternalServerError));
     close(clientSocket);
     return;
   }
@@ -152,6 +146,7 @@ void TCPServer::AcceptConnection(int client_fd) {
 
   client_fd = accept(serverSocket, (struct sockaddr *)&client, &clientLen);
   if (client_fd < 0) {
+    router.ErrorResp(HTTPErrors::BadRequest);
     std::cerr << "ERROR: not accepted connection\n";
     close(client_fd);
     return;

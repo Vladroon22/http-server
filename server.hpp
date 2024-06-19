@@ -27,13 +27,22 @@ class TCPServer {
         std::vector <char> Received(int client_fd);
         void Response(int clientSocket);
         void AddToEpoll(int fd);
-        std::string ErrorResp();
 
     private:
         int port;
         int serverSocket;
         int epollFD;
         Router &router;
+};
+
+enum class HTTPErrors : int {
+    BadRequest = 400, 
+    Unauthorized = 401,
+    Forbidden = 403, 
+    NotFound = 404,
+    MethodNotAllowed = 405,
+    InternalServerError = 500, 
+    NotImplemented = 501, 
 };
 
 }; 
