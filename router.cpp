@@ -1,14 +1,12 @@
 #include <fstream>
 #include <netinet/in.h>
 #include <string>
-#include <type_traits>
 #include <unistd.h>
 #include <sstream>
 #include <iostream>
 #include <chrono>
 #include <iomanip>
 #include <ctime>
-#include "router.hpp"
 #include "nlohmann/json.hpp"
 #include "server.hpp"
 
@@ -121,30 +119,19 @@ void Router::DELETE(int client_fd) {
     Send(client_fd, response.str());
 }
 
-template<typename T>
-void Router::PUT(int client_fd, T& data) {
-    if constexpr(std::is_same_v<T, std::stringstream>) {
-        HandleStream(client_fd, data);
-    } else if constexpr(std::is_same_v<T, std::ifstream>) {
-        HandleFile(client_fd, data);
-    } else if constexpr(std::is_same_v<T, json>) {
-        JSON(client_fd, data);
-    } else {
-        static_assert(false, "Unsupported data");
-    }
-    Send(client_fd, response.str());
-}
+
 
 void Router::HandleFile(int client_fd, std::ifstream& file){
-    if (file.is_open()) {
+    if (!file.is_open()) {
         ErrorResp(HTTPErrors::NotFound);
         std::cerr << "Failed to open file\n" << std::endl;  
         close(client_fd);
         return;          
     }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    html << buffer.str();
+    std::string buffer;
+    while (std::getline(file, buffer)) {
+        html << buffer << std::endl;
+    }  
 
     if (html.str().empty()) {
         response << "HTTP/1.1 204 No Content\r\n";
@@ -163,14 +150,13 @@ void Router::HandleFile(int client_fd, std::ifstream& file){
     file.close();
 }
 
-void Router::JSON(int client_fd, json &j){
+void Router::JSON(const json &j){
     if (j.dump().empty()) {
         response << "HTTP/1.1 204 No Content\r\n";
         response << "Content-Location: " << path << "\r\n";
         response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
         response << "Connection: keep-alive\r\n\r\n";
         response << j.dump();
-        Send(client_fd, response.str());
     } else {
         response << "HTTP/1.1 201 Created\r\n";
         response << "Content-Location: " << path << "\r\n";
@@ -178,7 +164,6 @@ void Router::JSON(int client_fd, json &j){
         response << "Content-Length: " << j.dump().size() << "\r\n";
         response << "Connection: keep-alive\r\n\r\n";
         response << j.dump();
-        Send(client_fd, response.str());
     }
 }
 
@@ -195,7 +180,6 @@ void Router::HandleStream(int client_fd, std::stringstream& ss) {
     response << "Content-Length: " << html.str().length() << "\r\n";
     response << "Connection: keep-alive\r\n\r\n";
     response << html.str();
-    Send(client_fd, response.str());
 }
 
 void Router::Set_header(const std::string &header) {

@@ -30,7 +30,7 @@ int main() {
         router.POST(client_fd, j);
     });
     
-    router.HandlerFunc("PUT", "/data/put", [&router](int client_fd){
+    router.HandlerFunc("PUT", "/data/put/file", [&router](int client_fd){
         /*std::stringstream html;
         html << "<!DOCTYPE html>\n";
         html << "<html>\n";
@@ -47,7 +47,25 @@ int main() {
         html << "</html>\n";*/
         std::ifstream file("index.html");
         router.PUT(client_fd, file);
-        file.close();
+    });
+
+    router.HandlerFunc("PUT", "/data/put/stream", [&router](int client_fd){
+        std::stringstream html;
+        html << "<!DOCTYPE html>\n";
+        html << "<html>\n";
+        html << "<head>\n";
+        html << "<meta charset='UTF-8'>\n";
+        html << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
+        html << "<title>Web-Server</title>\n";
+        html << "</head>\n";
+        html << "<body>\n";
+        html << "<h1>Welcome to My Website</h1>\n";
+        html << "<h2></h2>\n";
+        html << "<p><h3>PUT</h3></p>\n";
+        html << "</body>\n";
+        html << "</html>\n";
+        //std::ifstream file("index.html");
+        router.PUT(client_fd, html);
     });
 
     router.HandlerFunc("DELETE", "/data/delete", [&router](int client_fd){
