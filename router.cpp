@@ -116,7 +116,7 @@ void Router::POST(int client_fd, json& j) {
     response << "HTTP/1.1 200 OK\r\n";
     response << "Host: 127.0.0.1:8000\r\n";
     response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-    response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
+    response << "Content-Type: application/json; charset=utf-8\r\n";
     response << "Content-Length: " << j.dump().size() << "\r\n";
     response << "Connection: keep-alive\r\n\r\n";
     response << j.dump();
@@ -159,7 +159,7 @@ void Router::HandleFile(int client_fd, const std::string& filename){
         response << "HTTP/1.1 201 Created\r\n";
         response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
         response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
+        response << "Content-Type: text/plain; charset=utf-8\r\n";
         response << "Content-Length: " << j.dump().size() << "\r\n";
         response << "Connection: keep-alive\r\n\r\n";
         response << j.dump();
@@ -178,7 +178,7 @@ void Router::JSON(const json &j){
         response << "HTTP/1.1 201 Created\r\n";
         response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
         response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
+        response << "Content-Type: application/json; charset=utf-8\r\n";
         response << "Content-Length: " << j.dump().size() << "\r\n";
         response << "Connection: keep-alive\r\n\r\n";
         response << j.dump();
@@ -199,7 +199,7 @@ void Router::HandleStream(int client_fd, std::stringstream& ss) {
     response << "HTTP/1.1 200 OK\r\n";
     response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
     response << "Host: 127.0.0.1:8000\r\n";
-    response << "Content-Type: text/html; charset=utf-8\r\n";
+    response << "Content-Type: text/plain; charset=utf-8\r\n";
     response << "Content-Length: " << html.str().length() << "\r\n";
     response << "Connection: keep-alive\r\n\r\n";
     response << html.str();

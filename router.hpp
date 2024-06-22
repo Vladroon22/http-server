@@ -27,7 +27,7 @@ class Router {
         std::string ErrorResp(HTTPErrors error);
 
         template<typename T>
-        void PUT(int client_fd, void(&func)(T&)) { 
+        void PUT(int client_fd, void(&func)(int,T&)) { 
             T data;
             func(client_fd, data);
             Send(client_fd, response.str());
