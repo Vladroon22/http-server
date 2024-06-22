@@ -136,7 +136,8 @@ void Router::DELETE(int client_fd) {
 
 
 
-void Router::HandleFile(int client_fd, std::ifstream& file){
+void Router::HandleFile(int client_fd, const std::string& filename){
+    std::ifstream file(filename);
     if (!file.is_open()) {
         ErrorResp(StatusCode::NotFound);
         std::cerr << "Failed to open file\n" << std::endl;  
@@ -148,12 +149,9 @@ void Router::HandleFile(int client_fd, std::ifstream& file){
         html << buffer << std::endl;
     }  
 
-
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     std::tm now_tm = *std::gmtime(&now_c);  
-
-
 
     if (html.str().empty()) {
         ErrorResp(StatusCode::NoContent);

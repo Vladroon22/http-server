@@ -16,7 +16,7 @@ constexpr int MAX_EVENTS = 32;
 
 using namespace http;
 
-TCPServer::TCPServer(int port, Router& router) : port(port), serverSocket(-1), epollFD(-1), router(router) {}
+TCPServer::TCPServer(std::string address, int port, Router& router) : address(address), port(port), serverSocket(-1), epollFD(-1), router(router) {}
 
 TCPServer::~TCPServer() {
   if (serverSocket != -1 || epollFD != -1) {
@@ -41,7 +41,7 @@ bool TCPServer::Init() {
   struct sockaddr_in server;
   memset(&server, 0, sizeof(server));
   server.sin_family = AF_INET;
-  server.sin_addr.s_addr = inet_addr("127.0.0.1");
+  server.sin_addr.s_addr = inet_addr(address.c_str());
   server.sin_port = htons(port);
 
   int st = 1;
