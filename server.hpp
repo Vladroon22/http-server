@@ -35,7 +35,8 @@ class TCPServer {
         Router &router;
 };
 
-enum class HTTPErrors : int {
+enum class StatusCode : int {
+    NoContent = 204,
     BadRequest = 400, 
     Unauthorized = 401,
     Forbidden = 403, 

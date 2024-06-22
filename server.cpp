@@ -78,7 +78,7 @@ bool TCPServer::Init() {
 
 void TCPServer::Send(int clientSocket, const std::string &data) {
   if (send(clientSocket, data.c_str(), data.length(), O_NONBLOCK) < 0) {
-    router.ErrorResp(HTTPErrors::InternalServerError);
+    router.ErrorResp(StatusCode::InternalServerError);
     std::cerr << "ERROR: sending data to client\n\n";
     close(clientSocket);
   }
@@ -89,7 +89,7 @@ std::vector<char> TCPServer::Received(int client_fd) {
   int rcv = recv(client_fd, buffer.data(), buffer.size(), O_NONBLOCK);
 
   if (rcv < 0) {
-    router.ErrorResp(HTTPErrors::InternalServerError);
+    router.ErrorResp(StatusCode::InternalServerError);
     std::cout << "Client disconnected\n";
     close(client_fd);
     buffer.clear();
@@ -119,7 +119,7 @@ void TCPServer::Start() {
 void TCPServer::Response(int clientSocket) {
   std::vector<char> buffer = Received(clientSocket);
   if (buffer.empty()) {
-    Send(clientSocket, router.ErrorResp(HTTPErrors::InternalServerError));
+    Send(clientSocket, router.ErrorResp(StatusCode::InternalServerError));
     close(clientSocket);
     return;
   }
@@ -146,7 +146,7 @@ void TCPServer::AcceptConnection(int client_fd) {
 
   client_fd = accept(serverSocket, (struct sockaddr *)&client, &clientLen);
   if (client_fd < 0) {
-    router.ErrorResp(HTTPErrors::BadRequest);
+    router.ErrorResp(StatusCode::BadRequest);
     std::cerr << "ERROR: not accepted connection\n";
     close(client_fd);
     return;

@@ -19,47 +19,58 @@ Router::~Router() = default;
 
 void Router::Send(int clientSocket, const std::string &data) {
     if (send(clientSocket, data.c_str(), data.length(), 0) < 0) {
-        ErrorResp(HTTPErrors::InternalServerError);
+        ErrorResp(StatusCode::InternalServerError);
         std::cerr << "ERROR: sending data to client\n\n";
         close(clientSocket);
     }
 }
 
-std::string getErrorDescription(HTTPErrors error) {
+std::string getErrorDescription(StatusCode error) {
     switch (error) {
-        case HTTPErrors::BadRequest:
+        case StatusCode::NoContent:
+            return "No Content";
+        case StatusCode::BadRequest:
             return "Bad Request";
-        case HTTPErrors::Unauthorized:
+        case StatusCode::Unauthorized:
             return "Unauthorized";
-        case HTTPErrors::Forbidden:
+        case StatusCode::Forbidden:
             return "Forbidden";
-        case HTTPErrors::NotFound:
+        case StatusCode::NotFound:
             return "Not Found";
-        case HTTPErrors::MethodNotAllowed:
+        case StatusCode::MethodNotAllowed:
             return "Method Not Allowed";
-        case HTTPErrors::InternalServerError:
+        case StatusCode::InternalServerError:
             return "Internal Server Error";
-        case HTTPErrors::NotImplemented:
+        case StatusCode::NotImplemented:
             return "Not Implemented";
         default:
             return "Unknown Error";
     }
 }
 
-template<typename HTTPErrors>
-std::string Router::ErrorResp(HTTPErrors error) {
+template<typename StatusCode>
+std::string Router::ErrorResp(StatusCode error) {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::gmtime(&now_c);  
+
     std::string desc_error = getErrorDescription(error);
     int error_code = static_cast<int>(error); 
     html << "<!DOCTYPE html>\n <html>\n <head> <meta charset='UTF-8'>\n <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
     html << "<title>" << desc_error << "</title>\n";
     html << "</head>\n <body>" << std::to_string(error_code) + " " + desc_error << "</body>\n </html>\n";
-    response << "HTTP/1.1" + std::to_string(error_code) + " " + desc_error << "\r\nContent-Type: text/html; charser=utf-8\r\n Content-Length: " << html.str().length() << "\r\nConnection: close\r\n";
+    response << "HTTP/1.1" + std::to_string(error_code) + " " + desc_error << "\r\n";
+    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n" << "Content-Type: text/html; charser=utf-8\r\n Content-Length: " << html.str().length() << "\r\nConnection: close\r\n";
     response << "\r\n\r\n";
     response << html.str();
     return response.str();
 }
 
 void Router::GET(int client_fd) {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::gmtime(&now_c);  
+    
     html << "<!DOCTYPE html>\n";
     html << "<html>\n";
     html << "<head>\n";
@@ -75,12 +86,13 @@ void Router::GET(int client_fd) {
     html << "</html>\n";
 
     if (html.str().empty()) {
-        Send(client_fd, ErrorResp(HTTPErrors::NotFound));
+        Send(client_fd, ErrorResp(StatusCode::NotFound));
         close(client_fd);
         return;
     }
     
     response << "HTTP/1.1 200 OK\r\n";
+    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
     response << "Host: 127.0.0.1:8000\r\n";
     response << "Content-Type: text/html; charset=utf-8\r\n";
     response << "Content-Length: " << html.str().length() << "\r\n";
@@ -90,8 +102,12 @@ void Router::GET(int client_fd) {
 }
 
 void Router::POST(int client_fd, json& j) {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::gmtime(&now_c);  
+    
     if (j.dump().empty()) {
-        Send(client_fd, ErrorResp(HTTPErrors::NotFound));
+        Send(client_fd, ErrorResp(StatusCode::NotFound));
         close(client_fd);
         return;
     }
@@ -99,6 +115,7 @@ void Router::POST(int client_fd, json& j) {
     j.push_back("key1=value1&key2=value2");  
     response << "HTTP/1.1 200 OK\r\n";
     response << "Host: 127.0.0.1:8000\r\n";
+    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
     response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
     response << "Content-Length: " << j.dump().size() << "\r\n";
     response << "Connection: keep-alive\r\n\r\n";
@@ -110,11 +127,9 @@ void Router::DELETE(int client_fd) {
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     std::tm now_tm = *std::gmtime(&now_c);  
-    std::ostringstream oss;
-    oss << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT");
 
     response << "HTTP/1.1 200 OK\r\n";
-    response << oss.str() << "\r\n";
+    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
     response << "Connection: keep-alive\r\n\r\n";
     Send(client_fd, response.str());
 }
@@ -123,7 +138,7 @@ void Router::DELETE(int client_fd) {
 
 void Router::HandleFile(int client_fd, std::ifstream& file){
     if (!file.is_open()) {
-        ErrorResp(HTTPErrors::NotFound);
+        ErrorResp(StatusCode::NotFound);
         std::cerr << "Failed to open file\n" << std::endl;  
         close(client_fd);
         return;          
@@ -133,32 +148,37 @@ void Router::HandleFile(int client_fd, std::ifstream& file){
         html << buffer << std::endl;
     }  
 
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::gmtime(&now_c);  
+
+
+
     if (html.str().empty()) {
-        response << "HTTP/1.1 204 No Content\r\n";
-        response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: text/html; charset=utf-8" << "\r\n";
-        response << "Connection: keep-alive\r\n\r\n";
-        response << html.str();
+        ErrorResp(StatusCode::NoContent);
     } else {
         response << "HTTP/1.1 201 Created\r\n";
+        response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
         response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: text/html; charset=utf-8" << "\r\n";
-        response << "Content-Length: " << html.str().size() << "\r\n";
+        response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
+        response << "Content-Length: " << j.dump().size() << "\r\n";
         response << "Connection: keep-alive\r\n\r\n";
-        response << html.str();
+        response << j.dump();
     }
     file.close();
 }
 
 void Router::JSON(const json &j){
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::gmtime(&now_c);  
+
     if (j.dump().empty()) {
-        response << "HTTP/1.1 204 No Content\r\n";
-        response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
-        response << "Connection: keep-alive\r\n\r\n";
-        response << j.dump();
+        ErrorResp(StatusCode::NoContent);
     } else {
         response << "HTTP/1.1 201 Created\r\n";
+        response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
         response << "Content-Location: " << path << "\r\n";
         response << "Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n";
         response << "Content-Length: " << j.dump().size() << "\r\n";
@@ -168,13 +188,18 @@ void Router::JSON(const json &j){
 }
 
 void Router::HandleStream(int client_fd, std::stringstream& ss) {
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm now_tm = *std::gmtime(&now_c);  
+    
     if (ss.str().empty()) {
-        Send(client_fd, ErrorResp(HTTPErrors::NotFound));
+        Send(client_fd, ErrorResp(StatusCode::NotFound));
         close(client_fd);
         return;
     }
     
     response << "HTTP/1.1 200 OK\r\n";
+    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
     response << "Host: 127.0.0.1:8000\r\n";
     response << "Content-Type: text/html; charset=utf-8\r\n";
     response << "Content-Length: " << html.str().length() << "\r\n";
@@ -200,7 +225,7 @@ void Router::HandleRequest(int fd, const std::string &method, const std::string 
     if (routes.find(key) != routes.end()) {
         routes[key](fd);
     } else {
-        Send(fd, ErrorResp(HTTPErrors::InternalServerError));
+        Send(fd, ErrorResp(StatusCode::InternalServerError));
         close(fd);
     }
 }
