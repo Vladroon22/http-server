@@ -16,7 +16,7 @@ constexpr int MAX_EVENTS = 32;
 
 using namespace http;
 
-TCPServer::TCPServer(std::string address, int port, Router& router) : address(address), port(port), serverSocket(-1), epollFD(-1), router(router) {}
+TCPServer::TCPServer(const std::string& address, int port, Router& router) : address(address), port(port), serverSocket(-1), epollFD(-1), router(router) {}
 
 TCPServer::~TCPServer() {
   if (serverSocket != -1 || epollFD != -1) {

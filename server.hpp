@@ -15,7 +15,7 @@ namespace http{
 
 class TCPServer {
     public:
-        TCPServer(std::string, int port, Router& router);
+        TCPServer(const std::string& address, int port, Router& router);
         ~TCPServer();
         bool Init();
         void Start();
@@ -30,7 +30,7 @@ class TCPServer {
 
     private:
         int port;
-        std::string address;
+        const std::string address;
         int serverSocket;
         int epollFD;
         Router &router;

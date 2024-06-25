@@ -22,17 +22,17 @@ int main() {
 
     router.HandlerFunc("POST", "/data/post", [&router](int client_fd){  
         json j = {
-            {"email", "11@mail.ru"}, 
+            {"email", "12345@mail.ru"}, 
             {"password", "12345"}
         };
         router.POST(client_fd, j);
     });
     
-    router.HandlerFunc("PUT", "/data/put/file", [&router](int client_fd){
+    //router.HandlerFunc("PUT", "/data/put/file", [&router](int client_fd){
     //    router.PUT(client_fd, router.HandleFile(client_fd, "index.html"));
-    });
+    //});
 
-    router.HandlerFunc("PUT", "/data/put/stream", [&router](int client_fd){
+    /*router.HandlerFunc("PUT", "/data/put/stream", [&router](int client_fd){
         std::stringstream html;
         html << "<!DOCTYPE html>\n";
         html << "<html>\n";
@@ -47,8 +47,8 @@ int main() {
         html << "<p><h3>PUT</h3></p>\n";
         html << "</body>\n";
         html << "</html>\n";
-    //    router.PUT(client_fd, router.HandleStream(client_fd, html));
-    });
+        router.PUT(client_fd, router.HandleStream(client_fd, html));
+    });*/
 
     router.HandlerFunc("DELETE", "/data/delete", [&router](int client_fd){
         router.DELETE(client_fd);
