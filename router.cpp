@@ -101,7 +101,7 @@ void Router::GET(int client_fd) {
     Send(client_fd, response.str());
 }
 
-void Router::POST(int client_fd, const json j) {
+void Router::POST(int client_fd, const json& j) {
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     std::tm now_tm = *std::gmtime(&now_c);  
@@ -166,7 +166,7 @@ void Router::HandleFile(int client_fd, const std::string& filename){
     file.close();
 }
 
-void Router::JSON(const json j){
+void Router::JSON(const json& j){
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     std::tm now_tm = *std::gmtime(&now_c);  
@@ -209,7 +209,7 @@ void Router::Set_header(const std::string& header) {
 }
 
 std::string Router::genPath(const std::string& method, const std::string& path) {
-    return method + ":" + path;
+    return method + " " + path;
 }
 
 void Router::HandlerFunc(const std::string& method, const std::string& path, std::function<void(int)> handler) {
@@ -217,12 +217,12 @@ void Router::HandlerFunc(const std::string& method, const std::string& path, std
     routes[key] = handler;
 }
 
-void Router::HandleRequest(int fd, const std::string& method, const std::string& path) {
+void Router::HandleRequest(int fd, const std::string method, const std::string path) {
     std::string key = genPath(method, path);
     if (routes.find(key) != routes.end()) {
         routes[key](fd);
     } else {
-        Send(fd, ErrorResp(StatusCode::InternalServerError));
+        Send(fd, ErrorResp(StatusCode::NotFound));
         close(fd);
     }
 }

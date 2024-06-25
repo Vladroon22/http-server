@@ -15,11 +15,11 @@ class Router {
         Router();
         ~Router();
         void GET(int client_fd);
-        void POST(int client_fd, const json j);
+        void POST(int client_fd, const json &j);
         void DELETE(int client_fd);
         void HandlerFunc(const std::string& method, const std::string& path, std::function<void(int)> handler);
         void Set_header(const std::string& new_header);
-        void JSON(const json j);
+        void JSON(const json &j);
         void HandleFile(int client_fd, const std::string& filename);
         void HandleStream(int client_fd, std::stringstream& ss);        
 
@@ -34,7 +34,7 @@ class Router {
         }
     private:
         friend class TCPServer;
-        void HandleRequest(int id, const std::string& method, const std::string& path);
+        void HandleRequest(int id, const std::string method, const std::string path);
         void Send(int clientSocket, const std::string& data);
         std::string genPath(const std::string& method, const std::string& path);
     private:
