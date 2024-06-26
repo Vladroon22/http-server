@@ -1,9 +1,8 @@
-#ifndef ROUTER_HPP
-#define ROUTER_HPP
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
 
 #include <nlohmann/json.hpp>
 #include <functional>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -14,17 +13,15 @@ class Router {
     public:
         Router();
         ~Router();
+        
         void GET(int client_fd);
-        void POST(int client_fd, const json &j);
+        void POST(int client_fd, const json& j);
         void DELETE(int client_fd);
         void HandlerFunc(const std::string& method, const std::string& path, std::function<void(int)> handler);
         void Set_header(const std::string& new_header);
-        void JSON(const json &j);
+        void JSON(const json& j);
         void HandleFile(int client_fd, const std::string& filename);
-        void HandleStream(int client_fd, std::stringstream& ss);        
-
-        template<typename HTTPErrors>
-        std::string ErrorResp(HTTPErrors error);
+        void HandleStream(int client_fd, std::stringstream& ss);            
 
         template<typename T>
         void PUT(int client_fd, void(&func)(int,T&)) { 
@@ -32,9 +29,13 @@ class Router {
             func(client_fd, data);
             Send(client_fd, response.str());
         }
+
+        template<typename HTTPErrors>
+        std::string ErrorResp(HTTPErrors error);
+
     private:
         friend class TCPServer;
-        void HandleRequest(int id, const std::string method, const std::string path);
+        void HandleRequest(int id, const std::string& method, const std::string& path);
         void Send(int clientSocket, const std::string& data);
         std::string genPath(const std::string& method, const std::string& path);
     private:

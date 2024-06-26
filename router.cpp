@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iostream>
 #include <chrono>
-#include <iomanip>
 #include <ctime>
 #include "nlohmann/json.hpp"
 #include "server.hpp"
@@ -217,7 +216,7 @@ void Router::HandlerFunc(const std::string& method, const std::string& path, std
     routes[key] = handler;
 }
 
-void Router::HandleRequest(int fd, const std::string method, const std::string path) {
+void Router::HandleRequest(int fd, const std::string& method, const std::string& path) {
     std::string key = genPath(method, path);
     if (routes.find(key) != routes.end()) {
         routes[key](fd);
