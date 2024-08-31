@@ -6,5 +6,3 @@ Server is working on tcp/ipv4 connection based on Linux sockets using epoll-mult
 sudo apt-get install nlohmann-json3-dev
 
 run: make && ./my_server 
-
-go to link: http://127.0.0.1:8000
