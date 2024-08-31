@@ -1,4 +1,3 @@
-#include <fstream>
 #include <netinet/in.h>
 #include <string>
 #include <unistd.h>
@@ -6,8 +5,8 @@
 #include <iostream>
 #include <chrono>
 #include <ctime>
-#include "nlohmann/json.hpp"
 #include "server.hpp"
+#include "router.hpp"
 
 using json = nlohmann::json;
 using namespace http;
@@ -65,163 +64,25 @@ std::string Router::ErrorResp(StatusCode error) {
     return response.str();
 }
 
-void Router::GET(int client_fd) {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::gmtime(&now_c);  
-    
-    html << "<!DOCTYPE html>\n";
-    html << "<html>\n";
-    html << "<head>\n";
-    html << "<meta charset='UTF-8'>\n";
-    html << "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>\n";
-    html << "<title>My-Web-Server-in-C++</title>\n";
-    html << "</head>\n";
-    html << "<body>\n";
-    html << "<h1>Welcome to My Website</h1>\n";
-    html << "<h2>My Web-Server in C++</h2>\n";
-    html << "<p>This is the main content of my web-page.</p>\n";
-    html << "</body>\n";
-    html << "</html>\n";
 
-    if (html.str().empty()) {
-        Send(client_fd, ErrorResp(StatusCode::NotFound));
-        close(client_fd);
-        return;
-    }
-    
-    response << "HTTP/1.1 200 OK\r\n";
-    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-    response << "Host: 127.0.0.1:8000\r\n";
-    response << "Content-Type: text/html; charset=utf-8\r\n";
-    response << "Content-Length: " << html.str().length() << "\r\n";
-    response << "Connection: keep-alive\r\n\r\n";
-    response << html.str();
-    Send(client_fd, response.str());
-}
-
-void Router::POST(int client_fd, const json& j) {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::gmtime(&now_c);  
-    
-    if (j.dump().empty()) {
-        Send(client_fd, ErrorResp(StatusCode::NotFound));
-        close(client_fd);
-        return;
-    }
-
-    response << "HTTP/1.1 200 OK\r\n";
-    response << "Host: 127.0.0.1:8000\r\n";
-    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-    response << "Content-Type: application/json; charset=utf-8\r\n";
-    response << "Content-Length: " << j.dump().size() << "\r\n";
-    response << "Connection: keep-alive\r\n\r\n";
-    response << j.dump();
-    Send(client_fd, response.str());
-}
-
-void Router::DELETE(int client_fd) {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::gmtime(&now_c);  
-
-    response << "HTTP/1.1 200 OK\r\n";
-    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-    response << "Connection: keep-alive\r\n\r\n";
-    Send(client_fd, response.str());
-}
-
-
-
-void Router::HandleFile(int client_fd, const std::string& filename){
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        ErrorResp(StatusCode::NotFound);
-        std::cerr << "Failed to open file\n" << std::endl;  
-        close(client_fd);
-        return;          
-    }
-    std::string buffer;
-    while (std::getline(file, buffer)) {
-        html << buffer << std::endl;
-    }  
-
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::gmtime(&now_c);  
-
-    if (html.str().empty()) {
-        ErrorResp(StatusCode::NoContent);
-    } else {
-        response << "HTTP/1.1 201 Created\r\n";
-        response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-        response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: text/plain; charset=utf-8\r\n";
-        response << "Content-Length: " << j.dump().size() << "\r\n";
-        response << "Connection: keep-alive\r\n\r\n";
-        response << j.dump();
-    }
-    file.close();
-}
-
-void Router::JSON(const json& j){
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::gmtime(&now_c);  
-
-    if (j.dump().empty()) {
-        ErrorResp(StatusCode::NoContent);
-    } else {
-        response << "HTTP/1.1 201 Created\r\n";
-        response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-        response << "Content-Location: " << path << "\r\n";
-        response << "Content-Type: application/json; charset=utf-8\r\n";
-        response << "Content-Length: " << j.dump().size() << "\r\n";
-        response << "Connection: keep-alive\r\n\r\n";
-        response << j.dump();
+void Router::HandleFunc(const std::string& method, const std::string& path, std::function<void(int, Request)> handler) {
+    for (auto it = route.begin(); it != route.end(); ++it) {
+        if (it->path != path && it->method != method && it == route.end()) {
+            Send(it->id, ErrorResp(StatusCode::BadRequest));
+            close(it->id);
+        } else if (it->path == path && it->method == method) {
+            break;
+        } else {
+            continue;
+        }
     }
 }
 
-void Router::HandleStream(int client_fd, std::stringstream& ss) {
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-    std::tm now_tm = *std::gmtime(&now_c);  
-    
-    if (ss.str().empty()) {
-        Send(client_fd, ErrorResp(StatusCode::NotFound));
-        close(client_fd);
-        return;
-    }
-    
-    response << "HTTP/1.1 200 OK\r\n";
-    response << "Date: " << std::put_time(&now_tm, "%a, %d %b %Y %H:%M:%S GMT") << "\r\n";
-    response << "Host: 127.0.0.1:8000\r\n";
-    response << "Content-Type: text/plain; charset=utf-8\r\n";
-    response << "Content-Length: " << html.str().length() << "\r\n";
-    response << "Connection: keep-alive\r\n\r\n";
-    response << html.str();
-}
-
-void Router::Set_header(const std::string& header) {
-    response << header << "\r\n";
-}
-
-std::string Router::genPath(const std::string& method, const std::string& path) {
-    return method + " " + path;
-}
-
-void Router::HandlerFunc(const std::string& method, const std::string& path, std::function<void(int)> handler) {
-    std::string key = genPath(method, path);
-    routes[key] = handler;
-}
 
 void Router::HandleRequest(int fd, const std::string& method, const std::string& path) {
-    std::string key = genPath(method, path);
-    if (routes.find(key) != routes.end()) {
-        routes[key](fd);
-    } else {
-        Send(fd, ErrorResp(StatusCode::NotFound));
-        close(fd);
-    }
+    struct Route r;
+    r.method = std::move(method);
+    r.path = std::move(path);
+    r.id = fd;
+    route.push_back(r);
 }

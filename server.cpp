@@ -125,8 +125,8 @@ void TCPServer::Response(int clientSocket) {
   }
   std::string request(buffer.begin(), buffer.end());
   std::istringstream requestStream(request);
-  std::string method, path;
-  requestStream >> method >> path;
+  std::string method, path, proto;
+  requestStream >> method >> path >> proto;
 
   router.HandleRequest(clientSocket, method, path);
   std::cout << "Received: " << buffer.data() << std::endl;  
