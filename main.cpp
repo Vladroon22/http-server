@@ -10,10 +10,9 @@ using json = nlohmann::json;
 int main() { 
     http::Router router;
 
-    router.HandleFunc("GET", "/", std::function<void(int, Request)>([&router](int client_fd, Request w){
-        w.GET(client_fd, "index.html");
-    }));
-
+    router.HandleFunc("GET", "/", [&router](int client_fd, http::Request w){
+       w.GET(client_fd, "index.html");
+    });
 
     std::unique_ptr <http::TCPServer> server = std::make_unique <http::TCPServer> ("127.0.0.1", 8000, router); 
 
